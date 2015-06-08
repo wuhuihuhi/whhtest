@@ -1,0 +1,46 @@
+new AsyncTask<String, Void, String>(){
+
+			@Override
+			protected String doInBackground(String... arg0) {
+				try {
+					//从网络异步获取数据
+					URL url=new URL(arg0[0]);
+					URLConnection connection=url.openConnection();
+					InputStream is=connection.getInputStream();
+					InputStreamReader isr=new InputStreamReader(is);
+					BufferedReader br=new BufferedReader(isr);
+					String line;
+					StringBuilder builder=new StringBuilder();
+					while((line=br.readLine())!=null){
+						builder.append(line);
+					}
+					br.close();
+					is.close();
+					return builder.toString();
+					
+				} catch (MalformedURLException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				return null;
+			}
+
+			@Override
+			protected void onPostExecute(String result) {
+				try {
+					//解析Json字符串
+					JSONObject object=new JSONObject(result.toString());
+					JSONArray array=object.getJSONArray("employees");
+					for (int i = 0; i < array.length(); i++) {
+						JSONObject j = array.getJSONObject(i);
+						lists.add(new Employee(j.getString("firstName"), j.getString("lastName")));
+					}
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+				
+				super.onPostExecute(result);
+			}
+			
+			}.execute(url);
